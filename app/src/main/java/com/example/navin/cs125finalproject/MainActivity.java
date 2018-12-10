@@ -5,22 +5,46 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.content.*;
 
 import java.lang.*;
 import java.util.*;
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
 
+import org.json.JSONObject;
+
+import java.lang.String;
+
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+
 import com.convertapi.*;
 
 public class MainActivity extends AppCompatActivity {
     private Button button;
-    private static int RESULT_LOAD_IMAGE = 1;
 
+    private static RequestQueue rq;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        rq = Volley.newRequestQueue(this);
         setContentView(R.layout.activity_main);
 
         Button button1 = (Button) findViewById(R.id.how);
@@ -39,28 +63,22 @@ public class MainActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                final Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
-//                galleryIntent.setType("*/*");
-/*                startActivityForResult(galleryIntent, RESULT_LOAD_IMAGE);
 
-                String path = null;
+                String urlfromuser;
 
-                @Override
-                protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                    if (requestCode == RESULT_LOAD_IMAGE) {
-                        if (resultCode == RESULT_OK) {
-                            Uri fileUri = data.getData();
-                            path = fileUri.getPath();
-                        }
-                    }
-                }
-*/
+                InputMethodManager imm = (InputMethodManager) getSystemService(MainActivity.this.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                EditText text = (EditText)findViewById(R.id.edit_text_input);
+                String str = text.getText().toString();
+                System.out.println(str);
+                urlfromuser = "https://www." + str;
+
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         Config.setDefaultSecret("HcGArfflL2m9nok3");
                         CompletableFuture<ConversionResult> result = ConvertApi.convert("url", "pdf",
-                                new Param("Url", "https://faculty.math.illinois.edu/~pballen/teaching/241/exam1.html"));
+                                new Param("Url", urlfromuser));
                         String url = null;
                         try {
                             url = result.get().getFile(0).getUrl();
@@ -79,6 +97,67 @@ public class MainActivity extends AppCompatActivity {
                                 url2[i] = result2.get().getFile(i).getUrl();
                                 System.out.println("i = " + i + " url = " + url2[i]);
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        System.out.println("Uploading to Imgur");
+
+                        String wtf = "https://api.imgur.com/3/image";
+                        JsonObjectRequest[] jsonobjectrequest = new JsonObjectRequest[fl];
+                        for (int i = 0; i < fl; i++) {
+                            JSONObject json = new JSONObject();
+                            try {
+                                json.put("image", url2[i]);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            jsonobjectrequest[i] = new JsonObjectRequest
+                                    (Request.Method.POST, wtf, json, new Response.Listener<JSONObject>() {
+
+                                        @Override
+                                        public void onResponse(JSONObject response) {
+                                            try {
+                                                System.out.println(response.getJSONObject("data").getString("link"));
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }, new Response.ErrorListener() {
+
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            System.out.println(error);
+                                        }
+                                    }) {
+                                @Override
+                                public Map<String, String> getHeaders() {
+                                    Map<String, String> params = new HashMap<String, String>();
+                                    params.put("Authorization", "Client-ID 942e15fe4a3ad6c");
+                                    //                   params.put("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
+                                    System.out.println(params);
+                                    return params;
+                                }
+                            };
+                        }
+
+                        Thread t2 = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (int i = 0; i < jsonobjectrequest.length; i++) {
+                                    rq.add(jsonobjectrequest[i]);
+                                }
+                                try {
+                                    Thread.sleep(jsonobjectrequest.length * 3000);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        t2.start();
+                        try {
+                            t2.join();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -113,10 +192,12 @@ public class MainActivity extends AppCompatActivity {
                         System.out.println("Finally, " + url3);
                     }
                 });
+
                 t.start();
-                try {
-                    t.join();
-                } catch (Exception e) { }
+  //              try {
+  //                  t.join();
+  //              } catch (Exception e) { }
+
             }
         });
 

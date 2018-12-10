@@ -41,6 +41,25 @@ public class MainActivity extends AppCompatActivity {
 
     private static RequestQueue rq;
 
+    public class Item {
+        public List<String> urls;
+        public String index;
+
+        @Override
+        public String toString() {
+            return index;
+        }
+
+        public Item() {
+            urls = new ArrayList<>();
+            index = null;
+        }
+
+    }
+
+
+    public static List<Item> listurls = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +122,9 @@ public class MainActivity extends AppCompatActivity {
 
                         System.out.println("Uploading to Imgur");
 
+                        Item item = new Item();
+                        item.index = urlfromuser;
+
                         String wtf = "https://api.imgur.com/3/image";
                         JsonObjectRequest[] jsonobjectrequest = new JsonObjectRequest[fl];
                         for (int i = 0; i < fl; i++) {
@@ -119,7 +141,10 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void onResponse(JSONObject response) {
                                             try {
-                                                System.out.println(response.getJSONObject("data").getString("link"));
+                                                String wth = response.getJSONObject("data").getString("link");
+//                                                System.out.println(wth);
+                                                item.urls.add(wth);
+                                                System.out.println(item.urls.get(item.urls.size() - 1));
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
@@ -135,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                                 public Map<String, String> getHeaders() {
                                     Map<String, String> params = new HashMap<String, String>();
                                     params.put("Authorization", "Client-ID 942e15fe4a3ad6c");
-                                    //                   params.put("content-type", "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW");
                                     System.out.println(params);
                                     return params;
                                 }
@@ -162,12 +186,13 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
+                        listurls.add(item);
                         System.out.println("converting back to PDF!!");
 
 
                         for (int i = 0; i < fl; i++) {
                             CompletableFuture<ConversionResult> result3 = ConvertApi.convert("png", "pdf",
-                                    new Param("File", url2[i]));
+                                    new Param("File", item.urls.get(i)));
                             try {
                                 url2[i] = result3.get().getFile(0).getUrl();
                             } catch (Exception e) {

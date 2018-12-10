@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.content.*;
 
 import java.lang.*;
+import java.net.URL;
 import java.util.*;
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
@@ -43,11 +44,12 @@ public class MainActivity extends AppCompatActivity {
 
     public class Item {
         public List<String> urls;
-        public String index;
+        public String index, link;
 
         @Override
         public String toString() {
-            return index;
+            String tbr = index;
+            return tbr;
         }
 
         public Item() {
@@ -83,14 +85,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                String urlfromuser;
+                String urlfromuser, str = null;
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(MainActivity.this.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-                EditText text = (EditText)findViewById(R.id.edit_text_input);
-                String str = text.getText().toString();
+                EditText text = (EditText) findViewById(R.id.edit_text_input);
+                str = text.getText().toString();
+                str = "https://www." + str;
                 System.out.println(str);
-                urlfromuser = "https://www." + str;
+
+                urlfromuser = str;
 
                 Thread t = new Thread(new Runnable() {
                     @Override
@@ -187,36 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         listurls.add(item);
-                        System.out.println("converting back to PDF!!");
-
-
-                        for (int i = 0; i < fl; i++) {
-                            CompletableFuture<ConversionResult> result3 = ConvertApi.convert("png", "pdf",
-                                    new Param("File", item.urls.get(i)));
-                            try {
-                                url2[i] = result3.get().getFile(0).getUrl();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            System.out.println("i = " + i + " url = " + url2[i]);
-                        }
-
-                        Param[] lol = new Param[fl];
-                        for (int i = 0; i < fl; i++) {
-                            lol[i] = new Param("Files", url2[i]);
-                        }
-                        CompletableFuture<ConversionResult> result3 = ConvertApi.convert("pdf", "merge", lol);
-
-                        String url3 = null;
-
-                        try {
-                            url3 = result3.get().getFile(0).getUrl();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println("Finally, " + url3);
-                    }
-                });
+                }});
 
                 t.start();
   //              try {
@@ -235,4 +210,3 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
-

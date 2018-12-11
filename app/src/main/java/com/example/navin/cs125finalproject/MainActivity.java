@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         rq = Volley.newRequestQueue(this);
         setContentView(R.layout.activity_main);
 
-        Config.setDefaultSecret("HcGArfflL2m9nok3");
+        Config.setDefaultSecret("tGgMR5IsaCh2WAG1");
 
         Button button1 = (Button) findViewById(R.id.how);
         Button button2 = (Button) findViewById(R.id.Upload);

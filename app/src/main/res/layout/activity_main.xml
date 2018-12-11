@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+    TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -17,7 +17,6 @@
         android:layout_marginLeft="155dp"
         android:layout_marginBottom="30dp"
         android:text="How to Use" />
-
     <Button
         android:id="@+id/how"
         android:layout_width="wrap_content"
@@ -33,7 +32,8 @@
     <EditText
         android:id="@+id/edit_text_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:hint="(e.x: reddit.com)" />
 
     <Button
         android:id="@+id/Upload"
@@ -58,5 +58,17 @@
         android:layout_marginEnd="23dp"
         android:layout_marginRight="23dp"
         android:text="Download" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="42dp"
+        android:layout_marginLeft="42dp"
+        android:layout_marginTop="88dp"
+        app:srcCompat="@drawable/logo" />
 
 </RelativeLayout>

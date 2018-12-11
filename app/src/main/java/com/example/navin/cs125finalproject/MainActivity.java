@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.content.*;
 
 import java.lang.*;
-import java.net.URL;
 import java.util.*;
 import java.io.*;
 import java.util.concurrent.CompletableFuture;
@@ -42,25 +41,23 @@ public class MainActivity extends AppCompatActivity {
 
     private static RequestQueue rq;
 
-    public class Item {
+    public class Item implements Serializable {
         public List<String> urls;
         public String index, link;
 
         @Override
         public String toString() {
-            String tbr = index;
-            return tbr;
+            return index;
         }
 
-        public Item() {
-            urls = new ArrayList<>();
-            index = null;
+        public Item(String ind, String lin, List<String> ll) {
+            index = ind;
+            link = lin;
+            urls = ll;
         }
-
     }
 
-
-    public static List<Item> listurls = new ArrayList<>();
+    public static List<Item> listurls = new ArrayList<Item>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +65,51 @@ public class MainActivity extends AppCompatActivity {
         rq = Volley.newRequestQueue(this);
         setContentView(R.layout.activity_main);
 
+        Config.setDefaultSecret("HcGArfflL2m9nok3");
+
         Button button1 = (Button) findViewById(R.id.how);
         Button button2 = (Button) findViewById(R.id.Upload);
         Button button3 = (Button) findViewById(R.id.Download);
 
+        File dir = new File(getFilesDir().getPath() + "/URLS");
+        System.out.println(dir);
+        try {
+            if (!dir.exists()) {
+                dir.createNewFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        FileInputStream stream = null;
+        ObjectInputStream ostream = null;
+        try {
+            stream = new FileInputStream(dir);
+            ostream = new ObjectInputStream(stream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        while(true) {
+            try {
+                String ind = (String) ostream.readObject();
+                String link = (String) ostream.readObject();
+                List<String> ite = (List<String>) ostream.readObject();
+                listurls.add(new Item(ind, link, ite));
+                System.out.println(ite);
+             //   MainActivity.listurls.add(item);
+            } catch (Exception e) {
+                e.printStackTrace();
+                break;
+            }
+        }
+
+        try {
+            stream.close();
+            ostream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,10 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
                 urlfromuser = str;
 
+
+
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Config.setDefaultSecret("HcGArfflL2m9nok3");
+
                         CompletableFuture<ConversionResult> result = ConvertApi.convert("url", "pdf",
                                 new Param("Url", urlfromuser));
                         String url = null;
@@ -126,8 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
                         System.out.println("Uploading to Imgur");
 
-                        Item item = new Item();
-                        item.index = urlfromuser;
+                        Item item = new Item(urlfromuser, null, new ArrayList<>());
 
                         String wtf = "https://api.imgur.com/3/image";
                         JsonObjectRequest[] jsonobjectrequest = new JsonObjectRequest[fl];
@@ -191,7 +230,38 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         listurls.add(item);
-                }});
+
+                        File dir = new File(getFilesDir(), "URLS");
+                        System.out.println(dir);
+
+                        FileOutputStream stream = null;
+                        ObjectOutputStream ostream = null;
+                        try {
+                            stream = new FileOutputStream(dir);
+                            ostream = new ObjectOutputStream(stream);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        for (int i = 0; i < listurls.size(); i++) {
+                            try {
+                                Item item3 = listurls.get(i);
+                                ostream.writeObject(item3.index);
+                                ostream.writeObject(item3.link);
+                                ostream.writeObject(item3.urls);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        try {
+                            stream.close();
+                            ostream.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }});
 
                 t.start();
   //              try {

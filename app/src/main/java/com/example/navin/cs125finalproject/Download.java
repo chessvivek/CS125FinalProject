@@ -13,6 +13,11 @@ import com.convertapi.ConversionResult;
 import com.convertapi.ConvertApi;
 import com.convertapi.Param;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +30,6 @@ public class Download extends AppCompatActivity {
         setContentView(R.layout.activity_download);
 
         ArrayAdapter adapter = new ArrayAdapter<>(this,R.layout.list_view, MainActivity.listurls);
-
         ListView listView = (ListView) findViewById(R.id.list_url);
         listView.setAdapter(adapter);
 
